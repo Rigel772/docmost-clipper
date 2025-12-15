@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         disconnect: document.getElementById('disconnect-btn'),
         clip: document.getElementById('clip-btn'),
         settings: document.getElementById('settings-btn'),
-        exitSettings: document.getElementById('exit-settings-btn'),
+        saveExitSettings: document.getElementById('save-exit-settings-btn'),
 
         // New Space Buttons
         confirmCreateSpace: document.getElementById('confirm-create-space'),
@@ -45,7 +45,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentContentData = null;
 
     // Load Settings
-    const stored = await chrome.storage.local.get(['docmostUrl', 'authToken', 'lastSpaceId']);
+    const stored = await chrome.storage.local.get(['docmostUrl', 'authToken', 'lastSpaceId', 'theme']);
+
+    // Apply Theme
+    const currentTheme = stored.theme || 'auto';
+    applyTheme(currentTheme);
+    // Set selector value if element exists (might need check if view is rendered, but it is static html)
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = currentTheme;
+
+        themeSelect.addEventListener('change', (e) => {
+            const newTheme = e.target.value;
+            applyTheme(newTheme);
+            chrome.storage.local.set({ theme: newTheme });
+        });
+    }
+
+    function applyTheme(theme) {
+        document.body.classList.remove('dark-theme', 'light-theme');
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+        } else if (theme === 'light') {
+            document.body.classList.add('light-theme');
+        }
+        // 'auto' does nothing, letting CSS media queries handle it
+    }
 
     // Initialize View
     if (stored.docmostUrl) {
@@ -128,8 +153,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         showView('settings');
     });
 
-    if (buttons.exitSettings) {
-        buttons.exitSettings.addEventListener('click', () => {
+    if (buttons.saveExitSettings) {
+        buttons.saveExitSettings.addEventListener('click', async () => {
+            // Explicitly save the current theme value
+            const themeSelect = document.getElementById('theme-select');
+            if (themeSelect) {
+                const selectedTheme = themeSelect.value;
+                await chrome.storage.local.set({ theme: selectedTheme });
+                applyTheme(selectedTheme);
+            }
             showView('clipper');
         });
     }
@@ -295,10 +327,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isLoggedIn) {
             inputs.loginForm.classList.add('hidden');
             inputs.logoutSection.classList.remove('hidden');
+            if (buttons.disconnect) buttons.disconnect.classList.remove('hidden');
             inputs.url.disabled = true;
         } else {
             inputs.loginForm.classList.remove('hidden');
             inputs.logoutSection.classList.add('hidden');
+            if (buttons.disconnect) buttons.disconnect.classList.add('hidden');
             inputs.url.disabled = false;
         }
     }

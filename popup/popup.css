@@ -1,10 +1,147 @@
+:root {
+  /* Light Mode (Default) */
+  --bg-color: #f6f8fa;
+  --text-color: #24292f;
+  --header-border: #e1e4e8;
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-focus: #0969da;
+  --input-focus-shadow: rgba(9, 105, 218, 0.3);
+  --btn-border: rgba(27, 31, 36, 0.15);
+
+  --primary-btn-bg: #2da44e;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2c974b;
+
+  --secondary-btn-bg: #f6f8fa;
+  --secondary-btn-text: #24292f;
+  --secondary-btn-hover: #f3f4f6;
+
+  --save-btn-bg: #0969da;
+  --save-btn-hover: #0860ca;
+
+  --label-color: #24292f;
+  --sub-text-color: #57606a;
+
+  --error-bg: #ffebe9;
+  --error-text: #cf222e;
+  --error-border: #ff818266;
+
+  --success-bg: #dafbe1;
+  --success-text: #1a7f37;
+  --success-border: #4ac26b66;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0d1117;
+    --text-color: #c9d1d9;
+    --header-border: #30363d;
+    --input-bg: #0d1117;
+    --input-border: #30363d;
+    --input-focus: #1f6feb;
+    --input-focus-shadow: rgba(31, 111, 235, 0.3);
+    --btn-border: #30363d;
+
+    --primary-btn-bg: #238636;
+    --primary-btn-text: #ffffff;
+    --primary-btn-hover: #2ea043;
+
+    --secondary-btn-bg: #21262d;
+    --secondary-btn-text: #c9d1d9;
+    --secondary-btn-hover: #30363d;
+
+    --save-btn-bg: #1f6feb;
+    --save-btn-hover: #388bfd;
+
+    --label-color: #c9d1d9;
+    --sub-text-color: #8b949e;
+
+    --error-bg: rgba(248, 81, 73, 0.1);
+    --error-text: #f85149;
+    --error-border: rgba(248, 81, 73, 0.4);
+
+    --success-bg: rgba(46, 160, 67, 0.1);
+    --success-text: #3fb950;
+    --success-border: rgba(46, 160, 67, 0.4);
+  }
+}
+
+/* Force Light Theme */
+body.light-theme {
+  --bg-color: #f6f8fa;
+  --text-color: #24292f;
+  --header-border: #e1e4e8;
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-focus: #0969da;
+  --input-focus-shadow: rgba(9, 105, 218, 0.3);
+  --btn-border: rgba(27, 31, 36, 0.15);
+
+  --primary-btn-bg: #2da44e;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2c974b;
+
+  --secondary-btn-bg: #f6f8fa;
+  --secondary-btn-text: #24292f;
+  --secondary-btn-hover: #f3f4f6;
+
+  --save-btn-bg: #0969da;
+  --save-btn-hover: #0860ca;
+
+  --label-color: #24292f;
+  --sub-text-color: #57606a;
+
+  --error-bg: #ffebe9;
+  --error-text: #cf222e;
+  --error-border: #ff818266;
+
+  --success-bg: #dafbe1;
+  --success-text: #1a7f37;
+  --success-border: #4ac26b66;
+}
+
+/* Force Dark Theme */
+body.dark-theme {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --header-border: #30363d;
+  --input-bg: #0d1117;
+  --input-border: #30363d;
+  --input-focus: #1f6feb;
+  --input-focus-shadow: rgba(31, 111, 235, 0.3);
+  --btn-border: #30363d;
+
+  --primary-btn-bg: #238636;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2ea043;
+
+  --secondary-btn-bg: #21262d;
+  --secondary-btn-text: #c9d1d9;
+  --secondary-btn-hover: #30363d;
+
+  --save-btn-bg: #1f6feb;
+  --save-btn-hover: #388bfd;
+
+  --label-color: #c9d1d9;
+  --sub-text-color: #8b949e;
+
+  --error-bg: rgba(248, 81, 73, 0.1);
+  --error-text: #f85149;
+  --error-border: rgba(248, 81, 73, 0.4);
+
+  --success-bg: rgba(46, 160, 67, 0.1);
+  --success-text: #3fb950;
+  --success-border: rgba(46, 160, 67, 0.4);
+}
+
 body {
   width: 320px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   padding: 0;
   margin: 0;
-  background-color: #f6f8fa;
-  color: #24292f;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .container {
@@ -15,7 +152,7 @@ header {
   display: flex;
   align-items: center;
   margin-bottom: 16px;
-  border-bottom: 1px solid #e1e4e8;
+  border-bottom: 1px solid var(--header-border);
   padding-bottom: 8px;
 }
 
@@ -32,10 +169,9 @@ h2 {
 label {
   display: block;
   font-size: 13px;
-  /* Slightly larger for harmony */
   font-weight: 500;
   margin-bottom: 6px;
-  color: #24292f;
+  color: var(--label-color);
 }
 
 input,
@@ -43,8 +179,9 @@ select,
 textarea {
   width: 100%;
   padding: 8px 10px;
-  /* More padding */
-  border: 1px solid #d0d7de;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   box-sizing: border-box;
   font-size: 14px;
@@ -53,9 +190,9 @@ textarea {
 input:focus,
 select:focus,
 textarea:focus {
-  border-color: #0969da;
+  border-color: var(--input-focus);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
 }
 
 textarea {
@@ -67,7 +204,7 @@ button {
   width: 100%;
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid rgba(27, 31, 36, 0.15);
+  border: 1px solid var(--btn-border);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -76,44 +213,46 @@ button {
 
 /* Green Button (Clip) */
 .primary-btn {
-  background-color: #2da44e;
-  color: white;
-  border-color: rgba(27, 31, 36, 0.15);
+  background-color: var(--primary-btn-bg);
+  color: var(--primary-btn-text);
+  border-color: var(--btn-border);
 }
 
 .primary-btn:hover {
-  background-color: #2c974b;
+  background-color: var(--primary-btn-hover);
 }
 
 /* Secondary Button (Settings, Disconnect) */
 .secondary-btn {
-  background-color: #f6f8fa;
-  color: #24292f;
+  background-color: var(--secondary-btn-bg);
+  color: var(--secondary-btn-text);
   margin-top: 8px;
 }
 
 .secondary-btn:hover {
-  background-color: #f3f4f6;
+  background-color: var(--secondary-btn-hover);
 }
 
 /* Specific Override for Save Settings (Blue) */
-#save-settings {
-  background-color: #0969da;
+#save-settings,
+#save-exit-settings-btn {
+  background-color: var(--save-btn-bg);
   color: white;
 }
 
-#save-settings:hover {
-  background-color: #0860ca;
+#save-settings:hover,
+#save-exit-settings-btn:hover {
+  background-color: var(--save-btn-hover);
 }
 
 /* Specific Override for Clip (ensure it stays green) */
 #clip-btn {
-  background-color: #2da44e;
-  color: white;
+  background-color: var(--primary-btn-bg);
+  color: var(--primary-btn-text);
 }
 
 #clip-btn:hover {
-  background-color: #2c974b;
+  background-color: var(--primary-btn-hover);
 }
 
 .hidden {
@@ -128,19 +267,24 @@ button {
 }
 
 .error {
-  background-color: #ffebe9;
-  color: #cf222e;
-  border: 1px solid #ff818266;
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
 }
 
 .success {
-  background-color: #dafbe1;
-  color: #1a7f37;
-  border: 1px solid #4ac26b66;
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 
 .success-text {
-  color: #1a7f37;
+  color: var(--success-text);
   font-weight: 500;
   margin-bottom: 8px;
+}
+
+/* Helper for sub-text like Slug label */
+.sub-text {
+  color: var(--sub-text-color) !important;
 }

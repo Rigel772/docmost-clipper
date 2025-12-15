@@ -39,10 +39,20 @@
       <!-- Logout Section (Hidden by default) -->
       <div id="logout-section" class="hidden">
         <p class="success-text">✓ Connected</p>
-        <button id="disconnect-btn" class="secondary-btn">Disconnect</button>
       </div>
 
-      <button id="exit-settings-btn" class="secondary-btn" style="margin-top: 20px;">Exit Settings</button>
+      <div class="form-group">
+        <label for="theme-select">Theme</label>
+        <select id="theme-select">
+          <option value="auto">System (Auto)</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+
+      <button id="save-exit-settings-btn" class="primary-btn" style="margin-top: 20px;">Save & Exit</button>
+      <button id="disconnect-btn" class="secondary-btn hidden"
+        style="margin-top: 10px; border-color: transparent; color: #cf222e;">Disconnect</button>
     </div>
 
     <!-- Clipper View -->
