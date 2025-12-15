@@ -39,7 +39,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 8px 10px;
   /* More padding */
@@ -50,10 +51,16 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: #0969da;
   outline: none;
   box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+}
+
+textarea {
+  resize: vertical;
+  font-family: inherit;
 }
 
 button {

@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         spaceSelect: document.getElementById('space-select'),
         selectionGroup: document.getElementById('selection-group'),
         clipSelection: document.getElementById('clip-selection'),
+        userNotes: document.getElementById('user-notes'),
 
         loginForm: document.getElementById('login-form'),
         logoutSection: document.getElementById('logout-section')
@@ -144,20 +145,35 @@ document.addEventListener('DOMContentLoaded', async () => {
             const { docmostUrl } = await chrome.storage.local.get(['docmostUrl']);
 
             const pageTitle = inputs.title.value || currentContentData.title;
+            const userNote = inputs.userNotes.value.trim();
 
             // Determine content source (Selection or Full Page)
             const useSelection = inputs.clipSelection && inputs.clipSelection.checked;
             const bodyContent = useSelection ? currentContentData.selection : currentContentData.content;
             const sourceUrl = currentContentData.url;
 
+            let finalHtmlBody = '';
+
+            if (userNote) {
+                finalHtmlBody += `
+                    <blockquote style="background: #f0f4f8; border-left: 4px solid #0969da; padding: 12px; margin-bottom: 24px; color: #24292f; font-style: italic;">
+                        <strong>Note:</strong> ${userNote.replace(/\n/g, '<br>')}
+                    </blockquote>
+                `;
+            }
+
+            finalHtmlBody += `
+                <p><em>Clipped from: <a href="${sourceUrl}">${sourceUrl}</a></em></p>
+                <hr/>
+                ${bodyContent}
+            `;
+
             const htmlContent = `
                 <!DOCTYPE html>
                 <html>
                 <head><title>${pageTitle}</title></head>
                 <body>
-                    <p><em>Clipped from: <a href="${sourceUrl}">${sourceUrl}</a></em></p>
-                    <hr/>
-                    ${bodyContent}
+                    ${finalHtmlBody}
                 </body>
                 </html>
             `;
