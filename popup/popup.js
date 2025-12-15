@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         title: document.getElementById('page-title'),
         spaceSelect: document.getElementById('space-select'),
+        selectionGroup: document.getElementById('selection-group'),
+        clipSelection: document.getElementById('clip-selection'),
 
         loginForm: document.getElementById('login-form'),
         logoutSection: document.getElementById('logout-section')
@@ -28,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const statusMsg = document.getElementById('status-message');
+
+    // Store content data globally for access in clip handler
+    let currentContentData = null;
 
     // Load Settings
     const stored = await chrome.storage.local.get(['docmostUrl', 'authToken', 'lastSpaceId']);
@@ -126,6 +131,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        if (!currentContentData) {
+            showStatus('No content loaded. Please retry.', 'error');
+            return;
+        }
+
         buttons.clip.disabled = true;
         buttons.clip.textContent = 'Clipping...';
         showStatus('Extracting content...', 'success');
@@ -133,22 +143,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const { docmostUrl } = await chrome.storage.local.get(['docmostUrl']);
 
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            const content = await sendMessageToTab(tab.id, { action: 'get-content' });
+            const pageTitle = inputs.title.value || currentContentData.title;
 
-            if (!content.success) {
-                throw new Error(content.error || 'Failed to parse page content');
-            }
+            // Determine content source (Selection or Full Page)
+            const useSelection = inputs.clipSelection && inputs.clipSelection.checked;
+            const bodyContent = useSelection ? currentContentData.selection : currentContentData.content;
+            const sourceUrl = currentContentData.url;
 
-            const pageTitle = inputs.title.value || content.data.title;
             const htmlContent = `
                 <!DOCTYPE html>
                 <html>
                 <head><title>${pageTitle}</title></head>
                 <body>
-                    <p><em>Clipped from: <a href="${content.data.url}">${content.data.url}</a></em></p>
+                    <p><em>Clipped from: <a href="${sourceUrl}">${sourceUrl}</a></em></p>
                     <hr/>
-                    ${content.data.content}
+                    ${bodyContent}
                 </body>
                 </html>
             `;
@@ -204,9 +213,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function initializeClipView() {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
             if (tabs[0]) {
-                inputs.title.value = tabs[0].title;
+                const response = await sendMessageToTab(tabs[0].id, { action: 'get-content' });
+
+                if (response && response.success) {
+                    currentContentData = response.data;
+                    inputs.title.value = currentContentData.title;
+
+                    // Handle Selection Toggle
+                    if (currentContentData.selection && currentContentData.selection.trim().length > 0) {
+                        inputs.selectionGroup.classList.remove('hidden');
+                        inputs.clipSelection.checked = true; // Default to checked if selection exists
+                    } else {
+                        inputs.selectionGroup.classList.add('hidden');
+                        inputs.clipSelection.checked = false;
+                    }
+
+                } else {
+                    // Handle error fetching content?
+                    // Just leave inputs empty or show error?
+                    // Ideally retry or show status
+                }
             }
         });
     }
@@ -214,7 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function populateSpaces(spaces, selectedId = null) {
         inputs.spaceSelect.innerHTML = '<option value="" disabled selected>Select Space</option>';
         if (spaces.length > 0) {
-            console.log('First space item:', spaces[0]);
+            // Debug if needed
         } else {
             console.warn('No spaces found or empty array.');
         }
