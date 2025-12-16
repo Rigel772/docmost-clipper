@@ -69,7 +69,6 @@ The extension requires the following permissions to function:
     - `popup.js`: Core logic for Auth, Spaces API, and State Management.
 - **`src/`**:
     - `content.js`: Script to parse DOM and capture selections.
-    - `background.js`: Service worker.
     - `libs/Readability.js`: Content extraction engine.
 
 ## License
