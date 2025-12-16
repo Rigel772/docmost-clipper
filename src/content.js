@@ -1,5 +1,4 @@
 // src/content.js
-console.log('Docmost Clipper Content Script Loaded');
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'get-content') {
