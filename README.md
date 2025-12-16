@@ -1,11 +1,11 @@
 # Docmost Clipper
 
-A Chrome extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
+A secure Chrome extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
 
 ## ✨ Features
 
 - **🔌 Seamless Integration**: Connects securely to your self-hosted Docmost instance.
-- **🔒 Secure Authentication**: Supports standard Email/Password login (Session Cookies) with persisted sessions.
+- **🔒 Secure Authentication**: Relies entirely on **HttpOnly Session Cookies**. No tokens are stored in the extension.
 - **📄 Smart Extraction**: Built with Mozilla's Readability library to strip clutter and capture specific page content.
 - **✂️ Deep Clipping Control**:
     - **Full Page**: Captures the main article content.
@@ -15,10 +15,11 @@ A Chrome extension to clip web pages, articles, and selections directly to your 
     - Fetch and select from your existing Spaces.
     - **Create New Space** directly from the extension dropdown.
 - **🌗 Theme Customization**: Native support for **Dark Mode**, **Light Mode**, or automatic System Sync.
-- **⚡ Quick Actions**: Auto-generated page titles and intelligent slug generation for new spaces.
+- **⚡ Robustness**: Built-in network error handling and retry mechanisms.
 
 ## 🛠 Installation
 
+### From Source (Developer Mode)
 1.  Clone or download this repository.
 2.  Open Chrome and go to `chrome://extensions/`.
 3.  Enable **Developer mode** (toggle in the top right).
@@ -32,6 +33,7 @@ A Chrome extension to clip web pages, articles, and selections directly to your 
 2.  Enter your **Docmost URL** (e.g., `https://docmost.mydomain.com`).
 3.  Enter your **Email** and **Password**.
 4.  Click **Connect**.
+    *   *Note: The extension uses your browser's session. If you are already logged into Docmost in another tab, it may auto-detect your session.*
 
 ### 2. Clip Content
 1.  Navigate to the web page you want to save.
@@ -49,16 +51,17 @@ A Chrome extension to clip web pages, articles, and selections directly to your 
 ### 3. Settings
 - Click the **Settings** button in the clipper view.
 - **Theme**: Switch between `System (Auto)`, `Light`, or `Dark`.
-- Click **Save** to apply changes and return to clipping.
-- **Disconnect**: Log out to clear your session token.
+- **Disconnect**: Clears the stored URL and returns to the login screen.
 
-## 🔒 Permissions
+## 🔒 Permissions & Security
 
-The extension requires the following permissions to function:
-- **`activeTab`**: To access the content of the current tab when you click the extension.
-- **`scripting`**: To robustly inject the content extraction script into pages.
-- **`storage`**: To securely save your Docmost URL, session token, and preferences.
-- **`Host Permissions`**: To allow the extension to clip content from any website you visit.
+The extension is designed with a "Least Privilege" and "Secure by Design" approach:
+
+- **`activeTab`**: To access the content of the current tab *only when explicitly clicked*.
+- **`scripting`**: To dynamically inject the content extraction logic (Readability) on-demand. No persistent content scripts are used.
+- **`storage`**: To save your **Docmost URL** and **Preferences** (Theme, Last Space). *Authentication tokens are NEVER stored.*
+- **`cookies`**: To read CSRF tokens (`XSRF-TOKEN`, `csrf_token`) from your Docmost domain for secure POST requests.
+- **`<all_urls>` (Host Permission)**: Required to allow the extension to send clips to *your* specific self-hosted instance, whatever its URL may be.
 
 ## 📂 Project Structure
 
@@ -68,7 +71,7 @@ The extension requires the following permissions to function:
     - `popup.css`: Styling with CSS Variables for theming.
     - `popup.js`: Core logic for Auth, Spaces API, and State Management.
 - **`src/`**:
-    - `content.js`: Script to parse DOM and capture selections.
+    - `content.js`: Script to capture and **sanitize** selections (using DOMParser).
     - `libs/Readability.js`: Content extraction engine.
 
 ## License
