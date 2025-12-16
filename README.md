@@ -2,6 +2,8 @@
 
 A secure Chrome extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
 
+![Docmost Clipper Interface](assets/screenshot.png)
+
 ## ✨ Features
 
 - **🔌 Seamless Integration**: Connects securely to your self-hosted Docmost instance.
