@@ -75,10 +75,12 @@ The extension requires the following permissions to function:
 ## License
 
 This Chrome extension is an independent client for Docmost instances.
+It is not affiliated with Docmost, Inc.
 Docmost is licensed under the AGPL-3.0.
 
-This extension does not include, modify, or derive from Docmost source code.
-It communicates exclusively through Docmost's public HTTP API.
+This extension does not include, modify, or redistribute any part of
+Docmost Community or Enterprise Edition source code.
+It interacts with Docmost instances exclusively through publicly exposed HTTP APIs.
 
 MIT License
 
