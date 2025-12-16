@@ -362,16 +362,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let finalHtmlBody = '';
 
+            // Security: Escape User Inputs
+            const safeUserNote = escapeHtml(userNote);
+            const safeSourceUrl = escapeHtml(sourceUrl);
+            const safeTitle = escapeHtml(pageTitle);
+
             if (userNote) {
                 finalHtmlBody += `
                     <blockquote style="background: #f0f4f8; border-left: 4px solid #0969da; padding: 12px; margin-bottom: 24px; color: #24292f; font-style: italic;">
-                        <strong>Note:</strong> ${userNote.replace(/\n/g, '<br>')}
+                        <strong>Note:</strong> ${safeUserNote.replace(/\n/g, '<br>')}
                     </blockquote>
                 `;
             }
 
             finalHtmlBody += `
-                <p><em>Clipped from: <a href="${sourceUrl}">${sourceUrl}</a></em></p>
+                <p><em>Clipped from: <a href="${safeSourceUrl}">${safeSourceUrl}</a></em></p>
                 <hr/>
                 ${bodyContent}
             `;
@@ -379,7 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const htmlContent = `
                 <!DOCTYPE html>
                 <html>
-                <head><title>${pageTitle}</title></head>
+                <head><title>${safeTitle}</title></head>
                 <body>
                     ${finalHtmlBody}
                 </body>
@@ -409,6 +414,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             buttons.clip.textContent = 'Clip to Docmost';
         }
     });
+
+    // --- Helper Utils ---
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
     // --- Functions ---
 
