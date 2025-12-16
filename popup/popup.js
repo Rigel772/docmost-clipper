@@ -24,7 +24,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         newSpaceSlug: document.getElementById('new-space-slug'),
 
         loginForm: document.getElementById('login-form'),
-        logoutSection: document.getElementById('logout-section')
+        logoutSection: document.getElementById('logout-section'),
+
+        retryContainer: document.getElementById('retry-container')
     };
 
     const buttons = {
@@ -33,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         clip: document.getElementById('clip-btn'),
         settings: document.getElementById('settings-btn'),
         saveExitSettings: document.getElementById('save-exit-settings-btn'),
+        retry: document.getElementById('retry-btn'),
 
         // New Space Buttons
         confirmCreateSpace: document.getElementById('confirm-create-space'),
@@ -43,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Store content data globally for access in clip handler
     let currentContentData = null;
+    let retryAction = null; // Function to call when retry button is clicked
 
     // Load Settings
     const stored = await chrome.storage.local.get(['docmostUrl', 'authToken', 'lastSpaceId', 'theme']);
@@ -78,22 +82,63 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (stored.authToken) {
             toggleLoginState(true);
-
-            // Try explicit auto-login/fetch spaces
-            try {
-                const spaces = await fetchSpaces(stored.docmostUrl, stored.authToken);
-                showView('clipper');
-                populateSpaces(spaces, stored.lastSpaceId);
-                initializeClipView();
-            } catch (e) {
-                console.warn('Auto-login check failed', e);
-            }
+            // Attempt Auto-Login
+            loadSpacesWithRetry(stored.docmostUrl, stored.authToken, stored.lastSpaceId);
         } else {
             toggleLoginState(false);
         }
     }
 
+    // --- Helper Functions ---
+
+    async function loadSpacesWithRetry(url, token, lastSpaceId) {
+        hideRetry();
+        try {
+            const spaces = await fetchSpaces(url, token);
+            showView('clipper');
+            populateSpaces(spaces, lastSpaceId);
+            initializeClipView();
+        } catch (e) {
+            console.warn('Auto-login/Fetch check failed', e);
+            handleApiError(e, () => loadSpacesWithRetry(url, token, lastSpaceId));
+        }
+    }
+
+    function handleApiError(error, retryCallback) {
+        // Status 401/403: Auth failed (Token invalid)
+        if (error.message.includes('401') || error.message.includes('403')) {
+            showStatus('Session expired. Please reconnect.', 'error');
+            // Clear invalid token
+            chrome.storage.local.remove('authToken');
+            toggleLoginState(false);
+            showView('settings');
+            return;
+        }
+
+        // Network or other errors
+        showStatus(error.message || 'Network error occurred.', 'error');
+
+        if (retryCallback) {
+            retryAction = retryCallback;
+            inputs.retryContainer.classList.remove('hidden');
+        }
+    }
+
+    function hideRetry() {
+        inputs.retryContainer.classList.add('hidden');
+        retryAction = null;
+    }
+
     // --- Event Listeners ---
+
+    buttons.retry.addEventListener('click', () => {
+        if (retryAction) {
+            showStatus('Retrying...', 'success');
+            const action = retryAction; // Copy ref
+            hideRetry(); // Hide before executing
+            action();
+        }
+    });
 
     buttons.saveSettings.addEventListener('click', async () => {
         const rawUrl = inputs.url.value.trim();
@@ -138,6 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         buttons.saveSettings.disabled = true;
         buttons.saveSettings.textContent = 'Connecting...';
         showStatus('Connecting...', 'success');
+        hideRetry();
 
         try {
             await login(url, email, password);
@@ -159,7 +205,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error(err);
-            showStatus('Connection failed: ' + err.message, 'error');
+            // If it's a login failure, don't show retry, just show status
+            if (err.message.includes('Login Error')) {
+                showStatus('Login failed. Check credentials.', 'error');
+            } else {
+                handleApiError(err, () => buttons.saveSettings.click());
+            }
         } finally {
             buttons.saveSettings.disabled = false;
             buttons.saveSettings.textContent = 'Connect';
@@ -172,10 +223,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         inputs.email.value = '';
         inputs.password.value = '';
         showStatus('Disconnected.', 'success');
+        hideRetry();
     });
 
     buttons.settings.addEventListener('click', () => {
         showView('settings');
+        hideRetry();
     });
 
     if (buttons.saveExitSettings) {
@@ -188,6 +241,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 applyTheme(selectedTheme);
             }
             showView('clipper');
+            // If we are disconnected, Clipper view might be empty? 
+            // Usually valid flow but let's clear connection errors
+            statusMsg.classList.add('hidden');
         });
     }
 
@@ -240,12 +296,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         buttons.confirmCreateSpace.disabled = true;
         buttons.confirmCreateSpace.textContent = 'Creating...';
+        hideRetry();
 
         try {
             const { docmostUrl } = await chrome.storage.local.get(['docmostUrl']);
 
             // Create Space
-            const newSpaceResponse = await createSpace(docmostUrl, name, slug);
+            await createSpace(docmostUrl, name, slug);
 
             // Refresh Spaces
             const spaces = await fetchSpaces(docmostUrl);
@@ -262,7 +319,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error(err);
-            showStatus('Failed to create space: ' + err.message, 'error');
+            handleApiError(err, () => buttons.confirmCreateSpace.click());
         } finally {
             buttons.confirmCreateSpace.disabled = false;
             buttons.confirmCreateSpace.textContent = 'Create Space';
@@ -285,6 +342,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         buttons.clip.disabled = true;
         buttons.clip.textContent = 'Clipping...';
         showStatus('Extracting content...', 'success');
+        hideRetry();
 
         try {
             const { docmostUrl } = await chrome.storage.local.get(['docmostUrl']);
@@ -340,7 +398,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error(err);
-            showStatus('Error: ' + err.message, 'error');
+            // Allow retry of clip
+            handleApiError(err, () => buttons.clip.click());
             buttons.clip.disabled = false;
             buttons.clip.textContent = 'Clip to Docmost';
         }
@@ -472,7 +531,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify({ email, password }),
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
-        });
+        }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
         if (!response.ok) {
             const text = await response.text();
@@ -488,7 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             headers: headers,
             body: JSON.stringify({ page: 1, limit: 100 }),
             credentials: 'include'
-        });
+        }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
         if (!response.ok) {
             const text = await response.text();
@@ -511,7 +570,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             body: JSON.stringify({ name, slug }),
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
-        });
+        }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
         if (!response.ok) {
             const text = await response.text();
@@ -531,7 +590,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             method: 'POST',
             body: formData,
             credentials: 'include'
-        });
+        }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
         if (!response.ok) {
             const text = await response.text();
