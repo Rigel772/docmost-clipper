@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showStatus('Connection failed: ' + err.message, 'error');
         } finally {
             buttons.saveSettings.disabled = false;
-            buttons.saveSettings.textContent = 'Connect & Save';
+            buttons.saveSettings.textContent = 'Connect';
         }
     });
 

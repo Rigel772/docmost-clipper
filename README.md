@@ -24,7 +24,7 @@ A Chrome extension to clip web pages and save them directly to your self-hosted 
     - Click the extension icon.
     - Enter your **Docmost URL** (e.g., `https://docmost.yourdomain.com`).
     - Enter your **Email** and **Password**.
-    - Click **Connect & Save**.
+    - Click **Connect**.
 
 2.  **Clipping**:
     - Navigate to any article or page you wish to save.
