@@ -573,11 +573,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- API Interactions ---
 
+    async function getAntiCsrfHeaders(baseUrl) {
+        const headers = {};
+        if (!chrome.cookies) return headers;
+
+        try {
+            // Standard "Double Submit Cookie" patterns
+            const candidates = [
+                { cookie: 'XSRF-TOKEN', header: 'X-XSRF-TOKEN' },
+                { cookie: 'csrf_token', header: 'X-CSRF-Token' },
+                { cookie: '_csrf', header: 'X-CSRF-Token' }
+            ];
+
+            for (const c of candidates) {
+                const cookie = await chrome.cookies.get({ url: baseUrl, name: c.cookie });
+                if (cookie) {
+                    headers[c.header] = cookie.value;
+                    // Usually we only need one. Break after found.
+                    break;
+                }
+            }
+        } catch (e) {
+            console.warn('CSRF header generation failed', e);
+        }
+        return headers;
+    }
+
     async function login(baseUrl, email, password) {
+        const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...csrfHeaders
+        };
+
         const response = await fetch(`${baseUrl}/api/auth/login`, {
             method: 'POST',
             body: JSON.stringify({ email, password }),
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             credentials: 'include'
         }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
@@ -588,7 +620,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function fetchSpaces(baseUrl, token) {
-        const headers = { 'Content-Type': 'application/json' };
+        const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...csrfHeaders
+        };
 
         const response = await fetch(`${baseUrl}/api/spaces`, {
             method: 'POST',
@@ -613,10 +649,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function createSpace(baseUrl, name, slug) {
+        const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...csrfHeaders
+        };
+
         const response = await fetch(`${baseUrl}/api/spaces/create`, {
             method: 'POST',
             body: JSON.stringify({ name, slug }),
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             credentials: 'include'
         }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
@@ -634,9 +676,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('spaceId', spaceId);
         formData.append('file', file);
 
+        // Note: FormData checks do not need explicit Content-Type, browser sets it with boundary
+        // But we DO need the CSRF header
+        const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+
         const response = await fetch(`${baseUrl}/api/pages/import`, {
             method: 'POST',
             body: formData,
+            headers: csrfHeaders,
             credentials: 'include'
         }).catch(err => { throw new Error('Network Error: ' + err.message); });
 
