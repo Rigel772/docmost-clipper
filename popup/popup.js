@@ -147,6 +147,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // State for security confirmation
+    let pendingUrlChange = null;
+
     buttons.saveSettings.addEventListener('click', async () => {
         const rawUrl = inputs.url.value.trim();
         const email = inputs.email.value.trim();
@@ -159,6 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Validate and Normalize URL
         let url;
+        let newHostname;
         try {
             const urlObj = new URL(rawUrl);
 
@@ -174,13 +178,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            // Normalization (removes trailing slash automatically via origin)
+            // Normalization
             url = urlObj.origin;
+            newHostname = urlObj.hostname;
 
         } catch (e) {
             showStatus('Invalid URL format. Include http:// or https://', 'error');
             return;
         }
+
+        // Security: Host Change Warning
+        // We get the stored URL again to be sure
+        const freshStored = await chrome.storage.local.get(['docmostUrl']);
+        if (freshStored.docmostUrl) {
+            try {
+                const oldUrlObj = new URL(freshStored.docmostUrl);
+                if (oldUrlObj.hostname !== newHostname) {
+                    if (pendingUrlChange !== newHostname) {
+                        pendingUrlChange = newHostname;
+                        showStatus('⚠️ Security Warning: You are changing the target server. Click "Connect" again to confirm.', 'error');
+                        return; // BLOCK first attempt
+                    }
+                }
+            } catch (e) {
+                // Should not happen if stored URL was validated, but safe fallback
+            }
+        }
+        // Reset pending if we proceed
+        pendingUrlChange = null;
+
 
         if (!email || !password) {
             showStatus('Please enter Email and Password.', 'error');
