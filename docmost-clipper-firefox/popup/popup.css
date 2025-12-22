@@ -1,0 +1,290 @@
+:root {
+  /* Light Mode (Default) */
+  --bg-color: #f6f8fa;
+  --text-color: #24292f;
+  --header-border: #e1e4e8;
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-focus: #0969da;
+  --input-focus-shadow: rgba(9, 105, 218, 0.3);
+  --btn-border: rgba(27, 31, 36, 0.15);
+
+  --primary-btn-bg: #2da44e;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2c974b;
+
+  --secondary-btn-bg: #f6f8fa;
+  --secondary-btn-text: #24292f;
+  --secondary-btn-hover: #f3f4f6;
+
+  --save-btn-bg: #0969da;
+  --save-btn-hover: #0860ca;
+
+  --label-color: #24292f;
+  --sub-text-color: #57606a;
+
+  --error-bg: #ffebe9;
+  --error-text: #cf222e;
+  --error-border: #ff818266;
+
+  --success-bg: #dafbe1;
+  --success-text: #1a7f37;
+  --success-border: #4ac26b66;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #0d1117;
+    --text-color: #c9d1d9;
+    --header-border: #30363d;
+    --input-bg: #0d1117;
+    --input-border: #30363d;
+    --input-focus: #1f6feb;
+    --input-focus-shadow: rgba(31, 111, 235, 0.3);
+    --btn-border: #30363d;
+
+    --primary-btn-bg: #238636;
+    --primary-btn-text: #ffffff;
+    --primary-btn-hover: #2ea043;
+
+    --secondary-btn-bg: #21262d;
+    --secondary-btn-text: #c9d1d9;
+    --secondary-btn-hover: #30363d;
+
+    --save-btn-bg: #1f6feb;
+    --save-btn-hover: #388bfd;
+
+    --label-color: #c9d1d9;
+    --sub-text-color: #8b949e;
+
+    --error-bg: rgba(248, 81, 73, 0.1);
+    --error-text: #f85149;
+    --error-border: rgba(248, 81, 73, 0.4);
+
+    --success-bg: rgba(46, 160, 67, 0.1);
+    --success-text: #3fb950;
+    --success-border: rgba(46, 160, 67, 0.4);
+  }
+}
+
+/* Force Light Theme */
+body.light-theme {
+  --bg-color: #f6f8fa;
+  --text-color: #24292f;
+  --header-border: #e1e4e8;
+  --input-bg: #ffffff;
+  --input-border: #d0d7de;
+  --input-focus: #0969da;
+  --input-focus-shadow: rgba(9, 105, 218, 0.3);
+  --btn-border: rgba(27, 31, 36, 0.15);
+
+  --primary-btn-bg: #2da44e;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2c974b;
+
+  --secondary-btn-bg: #f6f8fa;
+  --secondary-btn-text: #24292f;
+  --secondary-btn-hover: #f3f4f6;
+
+  --save-btn-bg: #0969da;
+  --save-btn-hover: #0860ca;
+
+  --label-color: #24292f;
+  --sub-text-color: #57606a;
+
+  --error-bg: #ffebe9;
+  --error-text: #cf222e;
+  --error-border: #ff818266;
+
+  --success-bg: #dafbe1;
+  --success-text: #1a7f37;
+  --success-border: #4ac26b66;
+}
+
+/* Force Dark Theme */
+body.dark-theme {
+  --bg-color: #0d1117;
+  --text-color: #c9d1d9;
+  --header-border: #30363d;
+  --input-bg: #0d1117;
+  --input-border: #30363d;
+  --input-focus: #1f6feb;
+  --input-focus-shadow: rgba(31, 111, 235, 0.3);
+  --btn-border: #30363d;
+
+  --primary-btn-bg: #238636;
+  --primary-btn-text: #ffffff;
+  --primary-btn-hover: #2ea043;
+
+  --secondary-btn-bg: #21262d;
+  --secondary-btn-text: #c9d1d9;
+  --secondary-btn-hover: #30363d;
+
+  --save-btn-bg: #1f6feb;
+  --save-btn-hover: #388bfd;
+
+  --label-color: #c9d1d9;
+  --sub-text-color: #8b949e;
+
+  --error-bg: rgba(248, 81, 73, 0.1);
+  --error-text: #f85149;
+  --error-border: rgba(248, 81, 73, 0.4);
+
+  --success-bg: rgba(46, 160, 67, 0.1);
+  --success-text: #3fb950;
+  --success-border: rgba(46, 160, 67, 0.4);
+}
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  padding: 0;
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.container {
+  padding: 16px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--header-border);
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--label-color);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--input-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
+}
+
+textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+button {
+  width: 100%;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--btn-border);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+/* Green Button (Clip) */
+.primary-btn {
+  background-color: var(--primary-btn-bg);
+  color: var(--primary-btn-text);
+  border-color: var(--btn-border);
+}
+
+.primary-btn:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+/* Secondary Button (Settings, Disconnect) */
+.secondary-btn {
+  background-color: var(--secondary-btn-bg);
+  color: var(--secondary-btn-text);
+  margin-top: 8px;
+}
+
+.secondary-btn:hover {
+  background-color: var(--secondary-btn-hover);
+}
+
+/* Specific Override for Save Settings (Blue) */
+#save-settings,
+#save-exit-settings-btn {
+  background-color: var(--save-btn-bg);
+  color: white;
+}
+
+#save-settings:hover,
+#save-exit-settings-btn:hover {
+  background-color: var(--save-btn-hover);
+}
+
+/* Specific Override for Clip (ensure it stays green) */
+#clip-btn {
+  background-color: var(--primary-btn-bg);
+  color: var(--primary-btn-text);
+}
+
+#clip-btn:hover {
+  background-color: var(--primary-btn-hover);
+}
+
+.hidden {
+  display: none !important;
+}
+
+#status-message {
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+}
+
+.success {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.success-text {
+  color: var(--success-text);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+/* Helper for sub-text like Slug label */
+.sub-text {
+  color: var(--sub-text-color) !important;
+}

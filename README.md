@@ -1,8 +1,8 @@
 # Docmost Clipper
 
-A secure Chrome extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
+A secure extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
 
-![Docmost Clipper Interface](assets/screenshot.png)
+![Docmost Clipper Interface](docmost-clipper-chrome/assets/screenshot.png)
 
 ## ✨ Features
 
@@ -18,16 +18,7 @@ A secure Chrome extension to clip web pages, articles, and selections directly t
     - **Create New Space** directly from the extension dropdown.
 - **🌗 Theme Customization**: Native support for **Dark Mode**, **Light Mode**, or automatic System Sync.
 - **⚡ Robustness**: Built-in network error handling and retry mechanisms.
-- **🌍 Internationalization**: Fully localized interface. Currently supports **English**, **French** and **Chinese** (thanks to XJY00  - https://github.com/XJY00). 
-
-## 🛠 Installation
-
-### From Source (Developer Mode)
-1.  Clone or download this repository.
-2.  Open Chrome and go to `chrome://extensions/`.
-3.  Enable **Developer mode** (toggle in the top right).
-4.  Click **Load unpacked**.
-5.  Select the `docmost-clipper` folder.
+- **🌍 Internationalization**: Fully localized interface. Currently supports **English**, **French** and **Chinese** (thanks to XJY00  - https://github.com/XJY00).
 
 ## 🚀 Usage
 
@@ -66,20 +57,16 @@ The extension is designed with a "Least Privilege" and "Secure by Design" approa
 - **`cookies`**: To read CSRF tokens (`XSRF-TOKEN`, `csrf_token`) from your Docmost domain for secure POST requests.
 - **`<all_urls>` (Host Permission)**: Required to allow the extension to send clips to *your* specific self-hosted instance, whatever its URL may be.
 
-## 📂 Project Structure
+## 🛠 Installation
 
-- **`manifest.json`**: Manifest V3 configuration.
-- **`popup/`**:
-    - `popup.html`: The interface structure.
-    - `popup.css`: Styling with CSS Variables for theming.
-    - `popup.js`: Core logic for Auth, Spaces API, and State Management.
-- **`src/`**:
-    - `content.js`: Script to capture and **sanitize** selections (using DOMParser).
-    - `libs/Readability.js`: Content extraction engine.
+This project supports both Chrome and Firefox.
+
+- **[Chrome Extension](./docmost-clipper-chrome/README.md)**: Instructions for installing on Chrome/Edge/Brave.
+- **[Firefox Add-on](./docmost-clipper-firefox/README.md)**: Instructions for installing on Firefox.
 
 ## License
 
-This Chrome extension is an independent client for Docmost instances.
+This extension is an independent client for Docmost instances.
 It is not affiliated with Docmost, Inc.
 Docmost is licensed under the AGPL-3.0.
 
