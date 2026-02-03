@@ -427,7 +427,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       showStatus(browser.i18n.getMessage('statusUploading'), 'success');
 
-      await importPage(docmostUrl, spaceId, file);
+      let targetSpaceId;
+      let targetParentPageId = null;
+
+      if (spaceId === '__CALENDAR__') {
+        showStatus('Creating calendar structure...', 'success');
+        const calendarInfo = await ensureCalendarStructure(docmostUrl);
+        targetSpaceId = calendarInfo.spaceId;
+        targetParentPageId = calendarInfo.parentPageId;
+      } else {
+        targetSpaceId = spaceId;
+      }
+
+      const importResult = await importPage(docmostUrl, targetSpaceId, file);
+
+      if (targetParentPageId && importResult) {
+        const importedPageId = importResult.data?.id || importResult.id;
+        console.log('Imported Page ID:', importedPageId);
+
+        if (importedPageId) {
+          try {
+            showStatus('Moving to calendar day...', 'success');
+            await movePage(docmostUrl, importedPageId, targetParentPageId, targetSpaceId);
+          } catch (moveErr) {
+            console.error('Failed to move page to calendar day:', moveErr);
+            showStatus(`Page clipped but move failed: ${moveErr.message}`, 'warning');
+          }
+        } else {
+          console.warn('Could not extract imported page ID from result:', importResult);
+          showStatus('Page clipped (ID missing, move skipped)', 'warning');
+        }
+      }
 
       // Save the last used space ID
       await browser.storage.local.set({ lastSpaceId: spaceId });
@@ -547,6 +577,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     newSpaceOpt.textContent = browser.i18n.getMessage('optCreateNewSpace');
     newSpaceOpt.style.fontWeight = 'bold';
     inputs.spaceSelect.appendChild(newSpaceOpt);
+
+    // Add Clip to Calendar Option
+    const calendarOpt = document.createElement('option');
+    calendarOpt.value = '__CALENDAR__';
+    calendarOpt.textContent = '📅 Clip to Calendar';
+    calendarOpt.style.fontWeight = 'bold';
+    inputs.spaceSelect.appendChild(calendarOpt);
 
     const separator = document.createElement('option');
     separator.disabled = true;
@@ -692,12 +729,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function importPage(baseUrl, spaceId, file) {
     const formData = new FormData();
-    // Append text fields FIRST for better streaming parser compatibility
     formData.append('spaceId', spaceId);
     formData.append('file', file);
 
-    // Note: FormData checks do not need explicit Content-Type, browser sets it with boundary
-    // But we DO need the CSRF header
     const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
 
     const response = await fetch(`${baseUrl}/api/pages/import`, {
@@ -713,5 +747,201 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     return await response.json();
+  }
+
+  function generatePosition(lastPosition) {
+    if (!lastPosition) {
+      return 'a0000';
+    }
+
+    const base36chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let result = lastPosition;
+
+    for (let i = result.length - 1; i >= 0; i--) {
+      const char = result[i];
+      const index = base36chars.indexOf(char);
+
+      if (index < base36chars.length - 1) {
+        result = result.substring(0, i) + base36chars[index + 1] + result.substring(i + 1);
+        if (result.length >= 5 && result.length <= 12) {
+          return result;
+        }
+        break;
+      }
+    }
+
+    if (result.length < 12) {
+      result = result + '0';
+    }
+
+    if (result.length < 5) {
+      result = result.padEnd(5, '0');
+    }
+    if (result.length > 12) {
+      result = result.substring(0, 12);
+    }
+
+    return result;
+  }
+
+  async function movePage(baseUrl, pageId, parentPageId, spaceId) {
+    const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...csrfHeaders
+    };
+
+    // Fetch siblings to determine correct position
+    const siblings = await fetchPagesInSpace(baseUrl, spaceId, parentPageId);
+
+    siblings.sort((a, b) => (a.position || '').localeCompare(b.position || ''));
+
+    let position = 'a0000';
+    if (siblings.length > 0) {
+      const lastSibling = siblings[siblings.length - 1];
+      if (lastSibling && lastSibling.position) {
+        position = generatePosition(lastSibling.position);
+      }
+    }
+
+    const body = new URLSearchParams();
+    body.append('pageId', pageId);
+    body.append('parentPageId', parentPageId);
+    body.append('position', position);
+
+    const response = await fetch(`${baseUrl}/api/pages/move`, {
+      method: 'POST',
+      headers: headers,
+      body: body,
+      credentials: 'include'
+    }).catch(err => { throw new Error('Network Error: ' + err.message); });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Move Page Failed ${response.status}: ${text}`);
+    }
+
+    return await response.json();
+  }
+
+  async function fetchPagesInSpace(baseUrl, spaceId, pageId = null) {
+    const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...csrfHeaders
+    };
+
+    const body = new URLSearchParams();
+    body.append('spaceId', spaceId);
+    if (pageId) {
+      body.append('pageId', pageId);
+    }
+
+    const response = await fetch(`${baseUrl}/api/pages/sidebar-pages`, {
+      method: 'POST',
+      headers: headers,
+      body: body,
+      credentials: 'include'
+    }).catch(err => { throw new Error('Network Error: ' + err.message); });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Fetch Pages Failed ${response.status}: ${text}`);
+    }
+
+    const data = await response.json();
+    const pages = data.data || data;
+
+    if (Array.isArray(pages)) {
+      return pages;
+    } else if (pages && Array.isArray(pages.items)) {
+      return pages.items;
+    } else if (pages && Array.isArray(pages.pages)) {
+      return pages.pages;
+    }
+
+    return [];
+  }
+
+  async function createPage(baseUrl, spaceId, title, parentPageId = null) {
+    const csrfHeaders = await getAntiCsrfHeaders(baseUrl);
+    const headers = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      ...csrfHeaders
+    };
+
+    const body = new URLSearchParams();
+    body.append('spaceId', spaceId);
+    body.append('title', title);
+    if (parentPageId) {
+      body.append('parentPageId', parentPageId);
+    }
+
+    const response = await fetch(`${baseUrl}/api/pages/create`, {
+      method: 'POST',
+      headers: headers,
+      body: body,
+      credentials: 'include'
+    }).catch(err => { throw new Error('Network Error: ' + err.message); });
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Create Page Failed ${response.status}: ${text}`);
+    }
+
+    const data = await response.json();
+    return data.data || data;
+  }
+
+  async function ensureCalendarStructure(baseUrl) {
+    const now = new Date();
+    const year = now.getFullYear().toString();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const monthName = monthNames[now.getMonth()];
+    const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+
+    const monthTitle = `${month} - ${monthName}`;
+    const dayTitle = `${day} - ${dayName}`;
+
+    let spaces = await fetchSpaces(baseUrl);
+    let calendarSpace = spaces.find(s => s.name === 'Calendar' || s.slug === 'calendar');
+
+    if (!calendarSpace) {
+      const result = await createSpace(baseUrl, 'Calendar', 'calendar');
+      calendarSpace = result.data || result;
+    }
+
+    const spaceId = calendarSpace.id;
+
+    // 1. Check Year Page (Root Level)
+    const rootPages = await fetchPagesInSpace(baseUrl, spaceId, null);
+    let yearPage = rootPages.find(p => p.title === year);
+    if (!yearPage) {
+      yearPage = await createPage(baseUrl, spaceId, year, null);
+    }
+
+    // 2. Check Month Page (Child of Year)
+    const yearChildren = await fetchPagesInSpace(baseUrl, spaceId, yearPage.id);
+    let monthPage = yearChildren.find(p => p.title === monthTitle);
+    if (!monthPage) {
+      monthPage = await createPage(baseUrl, spaceId, monthTitle, yearPage.id);
+    }
+
+    // 3. Check Day Page (Child of Month)
+    const monthChildren = await fetchPagesInSpace(baseUrl, spaceId, monthPage.id);
+    let dayPage = monthChildren.find(p => p.title === dayTitle);
+    if (!dayPage) {
+      dayPage = await createPage(baseUrl, spaceId, dayTitle, monthPage.id);
+    }
+
+    return {
+      spaceId: spaceId,
+      parentPageId: dayPage.id
+    };
   }
 });
