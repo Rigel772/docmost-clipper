@@ -1,6 +1,6 @@
 # Docmost Clipper
 
-This is forked from https://github.com/emllegrand/docmost-clipper
+This is forked from Emmanuel Legrand repo: https://github.com/emllegrand/docmost-clipper
 
 With added opiton: Add to Calendar - which will create a new page in Calendar space under path: /Calendar/{year}/{month}/{day}/
 
