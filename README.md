@@ -4,6 +4,9 @@ A secure extension to clip web pages, articles, and selections directly to your 
 
 ![Docmost Clipper Interface](docmost-clipper-chrome/assets/screenshot.png)
 
+[Docmost API documentation](https://www.postman.com/docmost-api/docmost-api-workspace/collection/jg81pmh/docmost-api)
+
+
 ## ✨ Features
 
 - **🔌 Seamless Integration**: Connects securely to your self-hosted Docmost instance.

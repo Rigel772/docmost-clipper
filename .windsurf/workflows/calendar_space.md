@@ -16,3 +16,5 @@ For example if today is Tuesday February 2nd 2026 the workflow would be:
 - place the clipped content into "02 - Tuesday" page
 
 On provided screenshot you can see the spaces selector options in clipper window and example calendar tree structure
+
+The API documentation in resources/Docmost API.postman_collection.json
