@@ -1,5 +1,9 @@
 # Docmost Clipper
 
+This is forked from https://github.com/emllegrand/docmost-clipper
+
+With added opiton: Add to Calendar - which will create a new page in Calendar space under path: /Calendar/{year}/{month}/{day}/
+
 A secure extension to clip web pages, articles, and selections directly to your self-hosted [Docmost](https://docmost.com) instance.
 
 ![Docmost Clipper Interface](docmost-clipper-chrome/assets/screenshot.png)
